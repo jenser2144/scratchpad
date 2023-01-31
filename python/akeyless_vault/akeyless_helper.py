@@ -35,3 +35,5 @@ body = akeyless.GetSecretValue(
     token=token
 )
 res = api.get_secret_value(body)
+json_secret = json.loads(res.get("postgres_neon"))
+print(json_secret)
