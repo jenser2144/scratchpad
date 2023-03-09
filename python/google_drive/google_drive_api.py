@@ -119,7 +119,7 @@ class GoogleSheetsApi:
             values = result.get("values", [])
 
             if not values:
-                print('No data found.')
+                print("No data found.")
                 return
 
         except HttpError as err:
@@ -150,4 +150,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
