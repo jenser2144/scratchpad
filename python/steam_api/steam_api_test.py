@@ -11,11 +11,11 @@ sa = SteamApi(
     api_key=steam_api_key
 )
 
+downloads_dir = Path.home() / "Downloads"
+
 player_summary_response = sa.get_player_summaries(
     steamid=steamid
 )
-
-downloads_dir = Path.home() / "Downloads"
 
 # Write player summary results to csv file
 with open(f"{downloads_dir}/steam_player_summaries.csv", "w") as f:
@@ -35,3 +35,20 @@ with open(f"{downloads_dir}/steam_friends_list.csv", "w") as f:
         if i == 0:
             writer.writerow(friend.keys())
         writer.writerow(friend.values())
+
+
+owned_games_response = sa.get_owned_games(
+    steamid=steamid
+)
+
+with open(f"{downloads_dir}/steam_owned_games.csv", "w") as f:
+    writer = csv.writer(f)
+    for i, game in enumerate(owned_games_response.get("response").get("games")):
+        if i == 0:
+            writer.writerow(game.keys())
+        writer.writerow(game.values())
+
+achievements_list_response = sa.get_achievements(
+    steamid=steamid,
+    gameid="1938090"
+)
