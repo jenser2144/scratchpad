@@ -1,0 +1,24 @@
+test_dbt_project:
+  outputs:
+
+    dev:
+      type: postgres
+      threads: 2
+      host: "{{ env_var('HOST') }}"
+      port: 5432
+      user: "{{ env_var('USER') }}"
+      pass: "{{ env_var('PASS') }}"
+      dbname: neondb
+      schema: public
+
+    prod:
+      type: postgres
+      threads: 2
+      host: "{{ env_var('HOST') }}"
+      port: 5432
+      user: "{{ env_var('USER') }}"
+      pass: "{{ env_var('PASS') }}"
+      dbname: neondb
+      schema: public
+
+  target: dev

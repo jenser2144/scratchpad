@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+
+  dbt_runtime:
+    image: dbt_runtime
+    container_name: dbt_runtime
+    ports:
+      - "8001:8001"
+    build:
+      context: .
+      dockerfile: ./deploy/Dockerfile
+      args:
+        - HOST=${HOST}
+        - USER=${USER}
+        - PASS=${PASS}
+    volumes:
+      - $HOME/repos/scratchpad/dbt/src/test_dbt_project:/src/test_dbt_project
+    environment:
+      - HOST=$HOST
+      - USER=$USER
+      - PASS=$PASS
