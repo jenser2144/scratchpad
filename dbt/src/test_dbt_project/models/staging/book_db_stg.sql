@@ -7,7 +7,7 @@
 
 WITH book_db AS (
 
-    SELECT
+    SELECT DISTINCT
         TRIM(BOTH FROM title) AS title,
         TRIM(BOTH FROM toggl_title) AS toggl_title,
         TRIM(BOTH FROM author) AS author,
