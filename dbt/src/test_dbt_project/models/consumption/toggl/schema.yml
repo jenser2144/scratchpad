@@ -1,0 +1,7 @@
+version: 2
+
+models:
+  - name: toggl_entries
+    # columns:
+    #   - name: 
+    #     tests:
