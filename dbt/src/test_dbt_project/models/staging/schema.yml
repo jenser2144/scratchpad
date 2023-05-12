@@ -6,3 +6,21 @@ sources:
     # schema: public  
     tables:
       - name: book_db
+      - name: toggl_entry
+      - name: toggl_entry_tag
+      - name: toggl_project
+      - name: toggl_tag
+      - name: toggl_task
+      - name: toggl_user
+
+models:
+  - name: book_db_stg
+    # columns:
+    #   - name: 
+    #     tests:
+  - name: toggl_entry_stg
+  - name: toggl_entry_tag_stg
+  - name: toggl_project_stg
+  - name: toggl_tag_stg
+  - name: toggl_task_stg
+  - name: toggl_user_stg
