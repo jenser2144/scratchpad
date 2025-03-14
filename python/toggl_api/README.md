@@ -15,3 +15,7 @@ TOGGL_USERNAME=<toggl_username>
 TOGGL_PASSWORD=<toggl_password>
 TOGGL_WORKSPACE_ID=<toggl_workspace_id>
 ```
+
+## Files
+- `toggl_api.py`: Class containing methods to fetch data from Toggl API
+- `get_toggl_data.py`: Example script to fetch data from API using toggl_api class
