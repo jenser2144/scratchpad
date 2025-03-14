@@ -16,12 +16,12 @@ logging.basicConfig(level=logging.INFO)
 class TogglAPI:
     """Class to interact with the Toggl Api"""
 
-    def __init__(self) -> tuple:
+    def __init__(self):
         """Initialize the TogglAPI class"""
         self.email, self.password, self.workspace_id = self._get_env_variables()
         self.url = f"https://api.track.toggl.com/reports/api/v3/workspace/{self.workspace_id}/search/time_entries"
 
-    def _get_env_variables(self):
+    def _get_env_variables(self) -> tuple:
         """Get env variables from .env file
 
         Args:
