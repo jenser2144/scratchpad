@@ -13,7 +13,7 @@ Create _.env_ file in this directory with Toggl account information. Should look
 ```
 TOGGL_USERNAME=<toggl_username>
 TOGGL_PASSWORD=<toggl_password>
-TOGGL_WORKSPACE_ID=<toggl_workspace_id>
+TOGGL_ORGANIZATION_ID=<toggl_organization_id>
 ```
 
 ## Files

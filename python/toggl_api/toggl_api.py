@@ -18,8 +18,8 @@ class TogglAPI:
 
     def __init__(self):
         """Initialize the TogglAPI class"""
-        self.email, self.password, self.workspace_id = self._get_env_variables()
-        self.url = f"https://api.track.toggl.com/reports/api/v3/workspace/{self.workspace_id}/search/time_entries"
+        self.email, self.password, self.organization_id = self._get_env_variables()
+        self.base_url = "https://api.track.toggl.com"
 
     def _get_env_variables(self) -> tuple:
         """Get env variables from .env file
@@ -35,12 +35,12 @@ class TogglAPI:
         # Get the email and API key from environment variables
         email = getenv("TOGGL_USERNAME")
         password = getenv("TOGGL_PASSWORD")
-        workspace_id = getenv("TOGGL_WORKSPACE_ID")
-        return email, password, workspace_id
+        organization_id = getenv("TOGGL_ORGANIZATION_ID")
+        return email, password, organization_id
 
     def _split_date_range(self, start_date: str, end_date: str) -> list:
-        """Splits a date range into increments where each increment ends on the last day of the month
-        of the start date, if the range is larger than 30 days.
+        """Splits a date range into increments where each increment ends on the last day of the year
+        of the start date, if the range is larger than 365 days.
 
         Args:
             start_date (str): Start date in "YYYY-MM-DD" format.
@@ -61,19 +61,25 @@ class TogglAPI:
         end = datetime.strptime(end_date, "%Y-%m-%d")
 
         result = []
-        while (end - start).days > 30:
-            # Get the last day of the current month
-            last_day_of_month = monthrange(start.year, start.month)[1]
-            increment_end = datetime(start.year, start.month, last_day_of_month)
-            # Ensure the increment end does not exceed the overall end date
-            if increment_end > end:
-                increment_end = end
-            result.append((start.strftime('%Y-%m-%d'), increment_end.strftime('%Y-%m-%d')))
-            start = increment_end + timedelta(days=1)
+        start_year = start.year
+        end_year = end.year
+        # Check if range between start and end date is larger than 365 days
+        # If so, break up range into yearly tuples
+        if (end - start).days > 365:
+            for y in range(start_year, end_year + 1):
+                if y != end_year:
+                    if y != start_year:
+                        sd = start.replace(year=y, month=1, day=1)
+                    else:
+                        sd = start
+                    ed = end.replace(year=y, month=12, day=31)
+                else:
+                    sd = start.replace(year=y, month=1, day=1)
+                    ed = end
+                result.append((sd.strftime("%Y-%m-%d"), ed.strftime("%Y-%m-%d")))
+        else:
+            result.append((start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
 
-        # Add the final range if any
-        if start <= end:
-            result.append((start.strftime('%Y-%m-%d'), end.strftime('%Y-%m-%d')))
         return result
 
     def _parse_data(self, data: list) -> list:
@@ -110,9 +116,26 @@ class TogglAPI:
                 parsed_data.append(row_dict)
         return parsed_data
 
+    def get_workspace_ids(self) -> list:
+        """Fetch the workspace id's from the Toggl API given an organization_id.
 
-    def fetch_data(self, start_date: str, end_date:str) -> list:
-        """Fetch data from the Toggl API
+        Args:
+
+        Returns:
+            list of workspace_ids
+        """
+        workspace_url = f"{self.base_url}/api/v9/organizations/{self.organization_id}/workspaces/statistics"
+        auth = b64encode(f"{self.email}:{self.password}".encode("ascii")).decode("ascii")
+        headers = {
+            "content-type": "application/json",
+            "Authorization" : f"Basic {auth}"
+        }
+        return list(requests.get(workspace_url, headers=headers).json().keys())
+
+
+    def fetch_data(self, workspace_id: str, start_date: str, end_date:str) -> list:
+        """Fetch time entry data from the Toggl API. The API has limit of 30 calls per hour and maximum allowed date range is 366 days.
+        Docs: https://engineering.toggl.com/docs/reports/detailed_reports/
 
             Args:
                 start_date (str): Start date in "YYYY-MM-DD" format.
@@ -132,13 +155,13 @@ class TogglAPI:
         date_ranges = self._split_date_range(start_date=start_date, end_date=end_date)
         for date_range in date_ranges:
             start_date, end_date = date_range
-            logger.info(f"Fetching data for {start_date} to {end_date}")
+            logger.info(f"Fetching data for {start_date} to {end_date} for workspace id {workspace_id}")
             data = requests.post(
-                        self.url,
+                        url=f"{self.base_url}/reports/api/v3/workspace/{workspace_id}/search/time_entries",
                         json={
                             "start_date": start_date,
                             "end_date": end_date,
-                            "page_size": 500,
+                            "page_size": 5000,
                             # "first_row_number": 11,
                         },
                         headers=headers

@@ -3,13 +3,20 @@ import csv
 from toggl_api import TogglAPI
 
 toggl = TogglAPI()
-data = toggl.fetch_data(
-    start_date="2024-03-12",
-    end_date="2025-03-13",
-)
+workspace_ids = toggl.get_workspace_ids()
 
-for row in data:
-    with open("toggl_data.csv", mode="w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=row.keys())
-        writer.writeheader()
-        writer.writerows(data)
+all_data = []
+for workspace_id in workspace_ids:
+    data = toggl.fetch_data(
+        workspace_id=workspace_id,
+        start_date="2024-01-01",
+        end_date="2025-11-01",
+    )
+    all_data.append(data)
+
+for d in all_data:
+    for row in data:
+        with open("toggl_data.csv", mode="w", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=row.keys())
+            writer.writeheader()
+            writer.writerows(data)
