@@ -20,6 +20,7 @@ class TogglAPI:
         """Initialize the TogglAPI class"""
         self.email, self.password, self.organization_id = self._get_env_variables()
         self.base_url = "https://api.track.toggl.com"
+        self.headers = self._create_headers()
 
     def _get_env_variables(self) -> tuple:
         """Get env variables from .env file
@@ -37,6 +38,17 @@ class TogglAPI:
         password = getenv("TOGGL_PASSWORD")
         organization_id = getenv("TOGGL_ORGANIZATION_ID")
         return email, password, organization_id
+
+    def _create_headers(self):
+        """Create request headers with authorization credentials
+        Args:
+
+        Returns:
+            dictionary containing request headers
+        """
+
+        auth = b64encode(f"{self.email}:{self.password}".encode("ascii")).decode("ascii")
+        return {"content-type": "application/json", "Authorization" : f"Basic {auth}"}
 
     def _split_date_range(self, start_date: str, end_date: str) -> list:
         """Splits a date range into increments where each increment ends on the last day of the year
@@ -116,6 +128,15 @@ class TogglAPI:
                 parsed_data.append(row_dict)
         return parsed_data
 
+    def get_organization(self) -> dict:
+        """Get organization metadata from Toggl API
+
+        Returns:
+            dictionary containing organization metadata
+        """
+
+        return requests.get(f"{self.base_url}/api/v9/organizations/{self.organization_id}", headers=self.headers).json()
+
     def get_workspace_ids(self) -> list:
         """Fetch the workspace id's from the Toggl API given an organization_id.
 
@@ -124,13 +145,21 @@ class TogglAPI:
         Returns:
             list of workspace_ids
         """
+
         workspace_url = f"{self.base_url}/api/v9/organizations/{self.organization_id}/workspaces/statistics"
-        auth = b64encode(f"{self.email}:{self.password}".encode("ascii")).decode("ascii")
-        headers = {
-            "content-type": "application/json",
-            "Authorization" : f"Basic {auth}"
-        }
-        return list(requests.get(workspace_url, headers=headers).json().keys())
+        return list(requests.get(workspace_url, headers=self.headers).json().keys())
+
+    def get_workspace(self, workspace_id: str) -> dict:
+        """Get workspace metadata from Toggl API
+
+        Args:
+            workspace_id (str): ID of the Toggl workspace
+
+        Returns:
+            dictionary containing workspace metadata
+        """
+
+        return requests.get(f"{self.base_url}/api/v9/workspaces/{workspace_id}", headers=self.headers).json()
 
 
     def fetch_data(self, workspace_id: str, start_date: str, end_date:str) -> list:
@@ -145,12 +174,6 @@ class TogglAPI:
                 data_list (list): List of dictionaries containing the data fetch from the API
         """
 
-        auth = b64encode(f"{self.email}:{self.password}".encode("ascii")).decode("ascii")
-        headers = {
-            "content-type": "application/json",
-            "Authorization" : f"Basic {auth}"
-        }
-
         data_list = []
         date_ranges = self._split_date_range(start_date=start_date, end_date=end_date)
         for date_range in date_ranges:
@@ -164,7 +187,7 @@ class TogglAPI:
                             "page_size": 5000,
                             # "first_row_number": 11,
                         },
-                        headers=headers
+                        headers=self.headers
                     ).json()
             data_list.append(data)
             logger.info(f"Fetched {len(data)} row(s) of data")
