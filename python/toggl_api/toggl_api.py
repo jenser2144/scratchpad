@@ -149,6 +149,18 @@ class TogglAPI:
         workspace_url = f"{self.base_url}/api/v9/organizations/{self.organization_id}/workspaces/statistics"
         return list(requests.get(workspace_url, headers=self.headers).json().keys())
 
+    def get_projects(self, workspace_id: str) -> list:
+        """Get project metadata from Toggl API
+    
+        Args:
+            workspace_id (str): ID of the Toggl workspace
+
+        Returns:
+            list of dictionaries containing project metadata
+        """
+
+        return requests.get(f"{self.base_url}/api/v9/workspaces/{workspace_id}/projects", headers=self.headers).json()
+
     def get_workspace(self, workspace_id: str) -> dict:
         """Get workspace metadata from Toggl API
 
